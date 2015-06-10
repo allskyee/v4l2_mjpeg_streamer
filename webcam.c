@@ -18,12 +18,15 @@
  *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "picture.h"
+#include "global.h"
+//#include "picture.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <sys/fcntl.h>
+#include <sys/syslog.h>
+#include <sys/ioctl.h>
 
 
 /* This function sets up a TCP/IP socket for incoming requests. It is called only during

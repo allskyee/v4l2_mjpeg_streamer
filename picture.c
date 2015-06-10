@@ -8,8 +8,12 @@
  *
  */
 
-#include "picture.h"
-#include "event.h"
+#include "global.h"
+//#include "picture.h"
+//#include "event.h"
+
+#include <stdlib.h>
+#include <stdio.h>
 
 #undef HAVE_STDLIB_H
 #include <jpeglib.h>
@@ -91,7 +95,7 @@ static GLOBAL(int) _jpeg_mem_size(j_compress_ptr cinfo)
  * - dest_image is a pointer to the jpeg image buffer
  * Returns buffer size of jpeg image     
  */
-static int put_jpeg_yuv420p_memory(unsigned char *dest_image, int image_size,
+int put_jpeg_yuv420p_memory(unsigned char *dest_image, int image_size,
                                    unsigned char *input_image, int width, int height, int quality)
 {
     int i, j, jpeg_image_size;
@@ -380,6 +384,37 @@ static void put_ppm_bgr24_file(FILE *picture, unsigned char *image, int width, i
     }
 }
 
+/* put_picture_mem is used for the webcam feature. Depending on the image type
+ * (colour YUV420P or greyscale) the corresponding put_jpeg_X_memory function is called.
+ * Inputs:
+ * - cnt is the global context struct and only cnt->imgs.type is used.
+ * - image_size is the size of the input image buffer
+ * - *image points to the image buffer that contains the YUV420P or Grayscale image about to be put
+ * - quality is the jpeg quality setting from the config file.
+ * Output:
+ * - **dest_image is a pointer to a pointer that points to the destination buffer in which the
+ *   converted image it put
+ * Function returns the dest_image_size if successful. Otherwise 0.
+ */ 
+int put_picture_memory(struct context *cnt, unsigned char* dest_image, int image_size,
+                       unsigned char *image, int quality)
+{
+    switch (cnt->imgs.type) {
+    case VIDEO_PALETTE_YUV420P:
+        return put_jpeg_yuv420p_memory(dest_image, image_size, image,
+                                       cnt->imgs.width, cnt->imgs.height, quality);
+    case VIDEO_PALETTE_GREY:
+        return put_jpeg_grey_memory(dest_image, image_size, image,
+                                    cnt->imgs.width, cnt->imgs.height, quality);
+    default:
+        motion_log(LOG_ERR, 0, "Unknow image type %d", cnt->imgs.type);            
+    }
+
+    return 0;
+}
+
+
+#if 0
 /* copy smartmask as an overlay into motion images and movies */
 void overlay_smartmask(struct context *cnt, unsigned char *out)
 {
@@ -709,3 +744,4 @@ void preview_save(struct context *cnt)
         cnt->current_image = saved_current_image;
     }
 }
+#endif
