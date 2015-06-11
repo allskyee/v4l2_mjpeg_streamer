@@ -22,9 +22,8 @@ int main(int argc, char* argv[])
 	static char in_buf[320*240*2];
 	static char out_buf[320*240*2];
 	int seq, ret;
-	struct timeval tv;
-	int time_start, time_elapsed;
-	int time_get_frame, time_send_frame;
+	time_t t;
+	long last_sec;
 
 	/* 
 	 * setup signal
@@ -75,9 +74,20 @@ int main(int argc, char* argv[])
 		exit(0);
 	}
 
+	last_sec = time(NULL);
 	for (seq = 0; !finish; seq++) {
+		long sec;
+
 		vid_next(&ctxt, in_buf);
+
 		webcam_put(&ctxt, in_buf);
+
+		if (last_sec != (sec = time(NULL))) {
+			printf("%d fps\n", seq);
+			seq = 0;
+			last_sec = sec;
+		}
+
 		usleep(1000);
 
 		//printf("webcam_put\n");
