@@ -33,6 +33,11 @@ int main(int argc, char* argv[])
         exit(0);
     }
 
+	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
+        fprintf(stderr, "unable to disable pipe error handler\n");
+        exit(0);
+    }
+
 	ctxt.conf.setup_mode = 0;
 	ctxt.conf.webcam_limit = 0;
 	ctxt.conf.webcam_port = 8081;
