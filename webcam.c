@@ -28,6 +28,9 @@
 #include <sys/syslog.h>
 #include <sys/ioctl.h>
 
+#include <unistd.h>
+#include <sys/time.h>
+
 
 /* This function sets up a TCP/IP socket for incoming requests. It is called only during
  * initialisation of Motion from the function webcam_init
@@ -197,9 +200,9 @@ static void webcam_flush(struct webcam *list, int *stream_count, int lim)
  */
 static struct webcam_buffer *webcam_tmpbuffer(int size)
 {
-    struct webcam_buffer *tmpbuffer=mymalloc(sizeof(struct webcam_buffer));
+    struct webcam_buffer *tmpbuffer = (struct webcam_buffer*)mymalloc(sizeof(struct webcam_buffer));
     tmpbuffer->ref = 0;
-    tmpbuffer->ptr = mymalloc(size);
+    tmpbuffer->ptr = (unsigned char*)mymalloc(size);
         
     return tmpbuffer;
 }
@@ -207,7 +210,7 @@ static struct webcam_buffer *webcam_tmpbuffer(int size)
 
 static void webcam_add_client(struct webcam *list, int sc)
 {
-    struct webcam *new = mymalloc(sizeof(struct webcam));
+    struct webcam *_new = (struct webcam*)mymalloc(sizeof(struct webcam));
     static const char header[] = "HTTP/1.0 200 OK\r\n"
             "Server: Motion/"VERSION"\r\n"
             "Connection: close\r\n"
@@ -217,23 +220,23 @@ static void webcam_add_client(struct webcam *list, int sc)
             "Pragma: no-cache\r\n"
             "Content-Type: multipart/x-mixed-replace; boundary=--BoundaryString\r\n\r\n";
 
-    memset(new, 0, sizeof(struct webcam));
-    new->socket = sc;
+    memset(_new, 0, sizeof(struct webcam));
+    _new->socket = sc;
     
-    if ((new->tmpbuffer = webcam_tmpbuffer(sizeof(header))) == NULL) {
+    if ((_new->tmpbuffer = webcam_tmpbuffer(sizeof(header))) == NULL) {
         motion_log(LOG_ERR, 1, "Error creating tmpbuffer in webcam_add_client");
     } else {
-        memcpy(new->tmpbuffer->ptr, header, sizeof(header)-1);
-        new->tmpbuffer->size = sizeof(header)-1;
+        memcpy(_new->tmpbuffer->ptr, header, sizeof(header)-1);
+        _new->tmpbuffer->size = sizeof(header)-1;
     }
     
-    new->prev = list;
-    new->next = list->next;
+    _new->prev = list;
+    _new->next = list->next;
     
-    if (new->next)
-        new->next->prev=new;
+    if (_new->next)
+        _new->next->prev=_new;
     
-    list->next = new;
+    list->next = _new;
 }
 
 

@@ -68,6 +68,10 @@
 #include <assert.h>
 #include <fcntl.h>
 
+#include <sys/ioctl.h>
+#include <pthread.h>
+#include <unistd.h>
+
 #define u8 unsigned char
 #define u16 unsigned short
 #define u32 unsigned int
@@ -495,7 +499,7 @@ static int v4l2_set_mmap(src_v4l2_t * s)
         return -1;
     }
 
-    s->buffers = calloc(s->req.count, sizeof(netcam_buff));
+    s->buffers = (netcam_buff*)calloc(s->req.count, sizeof(netcam_buff));
     if (!s->buffers) {
         motion_log(LOG_ERR, 1, "%s: Out of memory.", __FUNCTION__);
         return -1;
@@ -517,7 +521,7 @@ static int v4l2_set_mmap(src_v4l2_t * s)
         }
 
         s->buffers[b].size = buf.length;
-        s->buffers[b].ptr = mmap(NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, s->fd, buf.m.offset);
+        s->buffers[b].ptr = (char*)mmap(NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, s->fd, buf.m.offset);
 
         if (s->buffers[b].ptr == MAP_FAILED) {
             motion_log(LOG_ERR, 1, "Error mapping buffer %i mmap", b);
@@ -570,7 +574,7 @@ static int v4l2_scan_controls(src_v4l2_t * s)
     }
 
     if (count) {
-        struct v4l2_queryctrl *ctrl = s->controls = calloc(count, sizeof(struct v4l2_queryctrl));
+        struct v4l2_queryctrl *ctrl = s->controls = (struct v4l2_queryctrl*)calloc(count, sizeof(struct v4l2_queryctrl));
 
         if (!ctrl) {
             motion_log(LOG_ERR, 1, "%s: Insufficient buffer memory.", __FUNCTION__);
@@ -659,42 +663,6 @@ static int v4l2_set_control(src_v4l2_t * s, u32 cid, int value)
 #define V4L_BTTVLOST_ERROR   0x05    /* binary 000101 */
 #define V4L_FATAL_ERROR        -1
     
-struct video_dev {
-    struct video_dev *next;
-    int usage_count;
-    int fd;
-    const char *video_device;
-    int input;
-    int width;
-    int height;
-    int brightness;
-    int contrast;
-    int saturation;
-    int hue;
-    unsigned long freq;
-    int tuner_number;
-    int fps;
-
-    pthread_mutex_t mutex;
-    pthread_mutexattr_t attr;
-    int owner;
-    int frames;
-
-    /* Device type specific stuff: */
-#ifndef WITHOUT_V4L
-    /* v4l */
-    int v4l2;
-    void *v4l2_private;
-
-    int size_map;
-    int v4l_fmt;
-    unsigned char *v4l_buffers[2];
-    int v4l_curbuffer;
-    int v4l_maxbuffer;
-    int v4l_bufsize;
-#endif
-};
-
 static struct video_dev *viddevs = NULL;
 static pthread_mutex_t vid_mutex;
 
@@ -762,7 +730,7 @@ unsigned char *v4l2_start(struct context *cnt, struct video_dev *viddev, int wid
     src_v4l2_t *s;
 
     /* Allocate memory for the state structure. */
-    if (!(s = calloc(sizeof(src_v4l2_t), 1))) {
+    if (!(s = (src_v4l2_t*)calloc(sizeof(src_v4l2_t), 1))) {
         motion_log(LOG_ERR, 1, "%s: Out of memory.", __FUNCTION__);
         goto err;
     }
@@ -803,7 +771,7 @@ unsigned char *v4l2_start(struct context *cnt, struct video_dev *viddev, int wid
     viddev->width = width;
     viddev->height = height;
 
-    return (void *) 1;
+    return (unsigned char *) 1;
 
 err:
     if (s)
@@ -1135,9 +1103,9 @@ int v4l2_next(struct context *cnt, struct video_dev *viddev, unsigned char *map,
         case V4L2_PIX_FMT_JPEG:            
         case V4L2_PIX_FMT_MJPEG:
 			assert(0); //not using this feature
+/*            
             return mjpegtoyuv420p(map, (unsigned char *) the_buffer->ptr, width, height, 
                                    s->buffers[s->buf.index].content_length);
-/*            
             return 0;
         case V4L2_PIX_FMT_JPEG:
             return conv_jpeg2yuv420(cnt, map, the_buffer, width, height);
@@ -1288,7 +1256,7 @@ case VIDEO_PALETTE_YUV422:
         dev = dev->next;
     }
 
-    dev = mymalloc(sizeof(struct video_dev));
+    dev = (struct video_dev*)mymalloc(sizeof(struct video_dev));
     memset(dev, 0, sizeof(struct video_dev));
 
     dev->video_device = conf->video_device;

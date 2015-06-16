@@ -180,6 +180,42 @@ struct context {
 	struct images imgs;
 };
 
+struct video_dev {
+    struct video_dev *next;
+    int usage_count;
+    int fd;
+    const char *video_device;
+    int input;
+    int width;
+    int height;
+    int brightness;
+    int contrast;
+    int saturation;
+    int hue;
+    unsigned long freq;
+    int tuner_number;
+    int fps;
+
+    pthread_mutex_t mutex;
+    pthread_mutexattr_t attr;
+    int owner;
+    int frames;
+
+    /* Device type specific stuff: */
+#ifndef WITHOUT_V4L
+    /* v4l */
+    int v4l2;
+    void *v4l2_private;
+
+    int size_map;
+    int v4l_fmt;
+    unsigned char *v4l_buffers[2];
+    int v4l_curbuffer;
+    int v4l_maxbuffer;
+    int v4l_bufsize;
+#endif
+};
+
 /*
  * function definitions
  */
@@ -199,5 +235,10 @@ int vid_v4l2_start(struct context *cnt);
 int vid_next(struct context* cnt, unsigned char* map);
 
 void vid_close(struct context *cnt);
+
+int put_picture_memory(struct context *cnt, unsigned char* dest_image, int image_size,
+                       unsigned char *image, int quality);
+
+int v4l2_next(struct context *cnt, struct video_dev *viddev, unsigned char *map, int width, int height);
 
 #endif

@@ -7,6 +7,8 @@
 
 #include "global.h"
 
+#include <unistd.h>
+
 unsigned short int debug_level;
 
 volatile int finish = 0;
@@ -19,8 +21,8 @@ void sigint_handler(int signo)
 int main(int argc, char* argv[])
 {
 	static struct context ctxt = {0};
-	static char in_buf[320*240*2];
-	static char out_buf[320*240*2];
+	static unsigned char in_buf[320*240*2];
+	static unsigned char out_buf[320*240*2];
 	int seq, ret;
 	time_t t;
 	long last_sec;

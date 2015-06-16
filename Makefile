@@ -10,3 +10,6 @@ mjpeg_streamer : $(OBJS)
 
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
+
+clean:
+	rm -f *.o mjpeg_streamer
