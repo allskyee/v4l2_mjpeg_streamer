@@ -18,11 +18,14 @@ void sigint_handler(int signo)
 	finish = 1;
 }
 
+#define WIDTH   1280
+#define HEIGHT  720
+
 int main(int argc, char* argv[])
 {
 	static struct context ctxt = {0};
-	static unsigned char in_buf[320*240*2];
-	static unsigned char out_buf[320*240*2];
+	static char in_buf[WIDTH*HEIGHT*2];
+	static char out_buf[WIDTH*HEIGHT*2];
 	int seq, ret;
 	time_t t;
 	long last_sec;
@@ -52,14 +55,14 @@ int main(int argc, char* argv[])
 	ctxt.conf.input = 8;
 	ctxt.conf.roundrobin_frames = 1;
 	ctxt.conf.roundrobin_skip = 1;
-	ctxt.conf.width = 320;
-	ctxt.conf.height = 240;
+	ctxt.conf.width = WIDTH;
+	ctxt.conf.height = HEIGHT;
 	ctxt.conf.video_device = "/dev/video0";
 
 	ctxt.imgs.width = ctxt.conf.width;
 	ctxt.imgs.height = ctxt.conf.height;
     ctxt.imgs.type = VIDEO_PALETTE_YUV420P;
-	ctxt.imgs.size = 320 * 240 * 3 / 2; //
+	ctxt.imgs.size = WIDTH * HEIGHT * 3 / 2; //
 
 	/*
 	 * mjpeg streaming init
