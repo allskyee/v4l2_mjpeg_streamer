@@ -18,8 +18,8 @@ void sigint_handler(int signo)
 	finish = 1;
 }
 
-#define WIDTH   1280
-#define HEIGHT  720
+#define WIDTH   1920
+#define HEIGHT  1080
 
 int main(int argc, char* argv[])
 {
@@ -59,10 +59,8 @@ int main(int argc, char* argv[])
 	ctxt.conf.height = HEIGHT;
 	ctxt.conf.video_device = "/dev/video0";
 
-	ctxt.imgs.width = ctxt.conf.width;
-	ctxt.imgs.height = ctxt.conf.height;
-    ctxt.imgs.type = VIDEO_PALETTE_YUV420P;
-	ctxt.imgs.size = WIDTH * HEIGHT * 3 / 2; //
+	//ctxt.imgs.type assigned in vid_v4l2_start()
+	//also type is set statically to VIDEO_PALETTE_YUV420P in v4l2_start()
 
 	/*
 	 * mjpeg streaming init

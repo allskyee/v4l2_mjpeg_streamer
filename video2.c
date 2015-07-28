@@ -1199,6 +1199,7 @@ int vid_v4l2_start(struct context *cnt)
      * Motion requires that width and height is a multiple of 16 so we check
      * for this first.
      */
+#if 0
     if (conf->width % 16) {
         motion_log(LOG_ERR, 0, "config image width (%d) is not modulo 16", conf->width);
         return -1;
@@ -1208,6 +1209,7 @@ int vid_v4l2_start(struct context *cnt)
         motion_log(LOG_ERR, 0, "config image height (%d) is not modulo 16", conf->height);
         return -1;
 	}
+#endif
 
     width = conf->width;
     height = conf->height;
@@ -1349,8 +1351,8 @@ int vid_next(struct context* cnt, unsigned char* map)
     //width = cnt->rotate_data.cap_width;                                                              
     //height = cnt->rotate_data.cap_height;                                                            
 
-	width = cnt->conf.width;
-	height = cnt->conf.height;
+	width = cnt->imgs.width;
+	height = cnt->imgs.height;
 
     pthread_mutex_lock(&vid_mutex);                                                                  
     dev = viddevs;                                                                                   

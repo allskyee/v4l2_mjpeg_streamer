@@ -6,7 +6,7 @@ INC=global.h
 OBJS=$(SRCS:.c=.o)
 
 mjpeg_streamer : $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJS) 
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
 
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
